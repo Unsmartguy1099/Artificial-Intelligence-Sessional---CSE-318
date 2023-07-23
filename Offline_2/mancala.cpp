@@ -1,5 +1,6 @@
 #include<bits/stdc++.h>
 #include<iostream>
+#include<time.h> 
 
 using namespace std;
 
@@ -13,12 +14,16 @@ class Board{
     int m1;
     int m2;
     bool player1;
+    int additonal;
+    int capture;
     Board(){
       p1=new int[6]{4,4,4,4,4,4};
       p2=new int[6]{4,4,4,4,4,4};
       m1=0;
       m2=0; 
       player1=true; 
+      additonal=0;
+      capture=0;
     }
     Board(int m1,int m2,int* p1,int* p2,bool player1){
         p1=new int[6];
@@ -42,6 +47,8 @@ class Board{
         this->m1=board->m1;
         this->m2=board->m2;
         this->player1=board->player1;
+        this->additonal=board->additonal;
+        this->capture=board->capture;
        
     }
 
@@ -70,6 +77,8 @@ class Board{
         this->m1=board->m1;
         this->m2=board->m2;
         this->player1=board->player1; 
+        this->additonal=board->additonal;
+        this->capture=board->capture;
     }
 
     int p1_stone(){
@@ -82,6 +91,16 @@ class Board{
     ~Board(){
         delete[] p1;
         delete[] p2;
+    }
+
+    void flush(){
+        p1=new int[6]{4,4,4,4,4,4};
+        p2=new int[6]{4,4,4,4,4,4};
+        m1=0;
+        m2=0; 
+        player1=true; 
+        additonal=0;
+        capture=0;
     }
 };
 
@@ -102,6 +121,10 @@ int Heuristic1(Board* board){
 int Heuristic2(Board* board){
     int W1=1;
     int W2=1;
+    srand(time(0));
+	W1 = rand() % 8 + 1;
+    srand(time(0));
+	W2 = rand() % 10 + 1;	
     return W1*(board->m1-board->m2)+W2*(board->p1_stone()-board->p2_stone());
 }
 
@@ -109,6 +132,12 @@ int Heuristic3(Board* board,int additional){
     int W1=1;
     int W2=1;
     int W3=1;
+    srand(time(0));
+	W1 = rand() % 10 + 1;
+    srand(time(0));
+	W2 = rand() % 10 + 1;
+    srand(time(0));
+	W3 = rand() % 10 + 1;
     return W1*(board->m1-board->m2)+W2*(board->p1_stone()-board->p2_stone())+W3*additional;
 }
 
@@ -130,15 +159,19 @@ void Game(Board* board,int n){
             if(i==6 && take>0){
                 board->m1++;
                 take--;
-                if(take==0)
+                if(take==0){
                     repeat=true;
+                    board->additonal++;
+                }
+                    
             }
             while(true){
                 for(;i<6;i++){
                     if(board->p1[i]==0 && take==1 && board->p2[5-i]!=0){
                         board->m1=board->m1+1+board->p2[5-i];
+                        board->capture=board->capture+board->p2[5-i];
                         board->p2[5-i]=0;
-                        take--;
+                        take--; 
                     }
                     if(take>0){
                         board->p1[i]++;
@@ -147,6 +180,7 @@ void Game(Board* board,int n){
                     if(i==5 and take==1){
                         board->m1++;
                         repeat=true;
+                        board->additonal++;
                         take--;//give second chance to current player
                     }
                     if(i==5 and take>1){
@@ -181,13 +215,17 @@ void Game(Board* board,int n){
             if(i==6 && take>0){
                 board->m2++;
                 take--;
-                if(take==0)
+                if(take==0){
                     repeat=true;
+                    board->additonal++;
+                }
+                    
             }
             while(true){
                 for(;i<6;i++){
                     if(board->p2[i]==0 && take==1 && board->p1[5-i]!=0){
                         board->m2=board->m2+1+board->p1[5-i];
+                        board->capture=board->capture+board->p1[5-i];
                         board->p1[5-i]=0;
                         take--;
                     }
@@ -198,6 +236,7 @@ void Game(Board* board,int n){
                     if(i==5 and take==1){
                         board->m2++;
                         repeat=true;
+                        board->additonal++;
                         take--;//give second chance to current player
                     }
                     if(i==5 and take>1){
@@ -230,7 +269,7 @@ void Game(Board* board,int n){
 int minimax(int depth,bool maximizingPlayer, int alpha,int beta,Board* board){
     int move=0;
     if (depth == 11 || board->isOver()){
-        return Heuristic1(board);
+        return Heuristic3(board,board->additonal);
     }
     if (maximizingPlayer)
     {   
@@ -295,8 +334,8 @@ int main(){
 
     int n;
     Board* board=new Board();
-        
-   
+  /*     
+    
     int p1_score=0;
     int p2_score=0;
 
@@ -336,6 +375,7 @@ int main(){
         
         Print(board);
     }
+    
     cout<<"game over"<<endl;
     if(board->m1>board->m2)
         cout<<"Player 1 wins!"<<endl;
@@ -347,6 +387,32 @@ int main(){
     cout<<"---------------------------"<<endl;
     cout<<"player 1:"<<board->m1<<endl;
     cout<<"player 2:"<<board->m2<<endl;
+*/
+int p1=0;
+int p2=0;
+int p3=0;
+for(int i=0;i<3;i++){
+    board->flush();
+        while(true){
+        if(board->isOver())
+            break;
+        if(board->player1){
+            GameAI(board);
+        }else{
+            GameAI(board);
+        } 
+    }
+    if(board->m1>board->m2)
+        p1++;
+    else if(board->m1<board->m2)
+        p2++;
+    else
+        p3++;
+}
+cout<<"p1 wins: "<<p1<<" times"<<endl;
+cout<<"p2 wins: "<<p2<<" times"<<endl;
+cout<<"Draw: "<<p3<<" times"<<endl;
+
 
     return 0;
 }
