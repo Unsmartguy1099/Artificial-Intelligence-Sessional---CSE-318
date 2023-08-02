@@ -7,6 +7,9 @@ using namespace std;
 const int MAX = 1000;
 const int MIN = -1000;
 
+//!need variable depth for both player
+//!need variable heuristic for both player
+
 class Board{
     public:
     int* p1;
@@ -128,7 +131,7 @@ int Heuristic2(Board* board){
     return W1*(board->m1-board->m2)+W2*(board->p1_stone()-board->p2_stone());
 }
 
-int Heuristic3(Board* board,int additional){
+int Heuristic3(Board* board){
     int W1=1;
     int W2=1;
     int W3=1;
@@ -138,15 +141,33 @@ int Heuristic3(Board* board,int additional){
 	W2 = rand() % 10 + 1;
     srand(time(0));
 	W3 = rand() % 10 + 1;
-    return W1*(board->m1-board->m2)+W2*(board->p1_stone()-board->p2_stone())+W3*additional;
+    return W1*(board->m1-board->m2)+W2*(board->p1_stone()-board->p2_stone())+W3*board->additonal;
 }
 
-int Heuristic4(Board* board,int additional,int captured){
+int Heuristic4(Board* board){
     int W1=1;
     int W2=1;
     int W3=1;
     int W4=1;
-    return W1*(board->m1-board->m2)+W2*(board->p1_stone()-board->p2_stone())+W3*additional+W4*captured;
+    srand(time(0));
+	W1 = rand() % 10 + 1;
+    srand(time(0));
+	W2 = rand() % 10 + 1;
+    srand(time(0));
+	W3 = rand() % 10 + 1;
+    srand(time(0));
+	W4 = rand() % 10 + 1;
+    return W1*(board->m1-board->m2)+W2*(board->p1_stone()-board->p2_stone())+W3*board->additonal+W4*board->capture;
+}
+
+int Heuristic5(Board* board){
+    int W1=1;
+    int W2=1;
+    srand(time(0));
+	W1 = rand() % 10 + 1;
+    srand(time(0));
+	W2 = rand() % 10 + 1;
+    return W1*board->additonal+W2*board->capture;
 }
 
 void Game(Board* board,int n){
@@ -217,7 +238,7 @@ void Game(Board* board,int n){
                 take--;
                 if(take==0){
                     repeat=true;
-                    board->additonal++;
+                    //board->additonal++;
                 }
                     
             }
@@ -225,7 +246,7 @@ void Game(Board* board,int n){
                 for(;i<6;i++){
                     if(board->p2[i]==0 && take==1 && board->p1[5-i]!=0){
                         board->m2=board->m2+1+board->p1[5-i];
-                        board->capture=board->capture+board->p1[5-i];
+                        //board->capture=board->capture+board->p1[5-i];
                         board->p1[5-i]=0;
                         take--;
                     }
@@ -236,7 +257,7 @@ void Game(Board* board,int n){
                     if(i==5 and take==1){
                         board->m2++;
                         repeat=true;
-                        board->additonal++;
+                        //board->additonal++;
                         take--;//give second chance to current player
                     }
                     if(i==5 and take>1){
@@ -266,10 +287,26 @@ void Game(Board* board,int n){
         }   
 }
 
-int minimax(int depth,bool maximizingPlayer, int alpha,int beta,Board* board){
+int minimax(int depth,bool maximizingPlayer, int alpha,int beta,Board* board,int h){
     int move=0;
     if (depth == 11 || board->isOver()){
-        return Heuristic3(board,board->additonal);
+        
+        if(h==1){
+            return Heuristic1(board);
+        }
+        else if(h==2){
+            return Heuristic2(board);
+        }
+        else if(h==3){
+            return Heuristic3(board);
+        }
+        else if(h==4){
+            return Heuristic4(board);
+        }
+        else{
+            return Heuristic5(board);
+        }
+
     }
     if (maximizingPlayer)
     {   
@@ -283,7 +320,7 @@ int minimax(int depth,bool maximizingPlayer, int alpha,int beta,Board* board){
                 continue;
             }
             Game(boardChild,i+1);
-            int val = minimax(depth + 1,boardChild->player1,alpha,beta,boardChild);
+            int val = minimax(depth + 1,boardChild->player1,alpha,beta,boardChild,h);
             if(best<val)
                 move=i+1;
             best = max(best,val);
@@ -310,7 +347,7 @@ int minimax(int depth,bool maximizingPlayer, int alpha,int beta,Board* board){
             }
             Game(boardChild,i+1);
             
-            int val = minimax(depth + 1,boardChild->player1,alpha,beta,boardChild);
+            int val = minimax(depth + 1,boardChild->player1,alpha,beta,boardChild,h);
             if(best>val)
                 move=i+1;
             best = min(best, val);
@@ -325,8 +362,8 @@ int minimax(int depth,bool maximizingPlayer, int alpha,int beta,Board* board){
     }
 }
 
-void GameAI(Board* board){
-    int move=minimax(0,board->player1,MIN,MAX,board);
+void GameAI(Board* board,int h){
+    int move=minimax(0,board->player1,MIN,MAX,board,h);
     Game(board,move);
 }
 
@@ -334,60 +371,71 @@ int main(){
 
     int n;
     Board* board=new Board();
-  /*     
-    
-    int p1_score=0;
-    int p2_score=0;
-
-    Print(board);
-
-    while(true){
-        if(board->isOver())
-            break;
-        if(board->player1){
-            // cout<<"Player 1:"<<endl;
-            // while(true){
-            // cin>>n;
-            //     if(n>6||n<1)
-            //         cout<<"give a number between 1 to 6"<<endl;
-            //     else if(board->p1[n-1]==0)
-            //         cout<<"give a number of a pot that is not empty"<<endl;
-            //     else
-            //         break;
-            // }
-            // Game(board,n);
-            GameAI(board);
-        }else{
-            
-            // cout<<"Player 2:"<<endl;
-            // while(true){
-            // cin>>n;
-            //     if(n>6||n<1)
-            //         cout<<"give a number between 1 to 6"<<endl;
-            //     else if(board->p2[n-1]==0)
-            //         cout<<"give a number of a pot that is not empty"<<endl;
-            //     else
-            //         break;
-            // }
-            // Game(board,n);
-            GameAI(board);
-        }
+    int h=1;
+    cout<<"which heuristic you want to select:"<<endl;
+    cin>>h;
+    if(h>5||h<1)
+        h=1;
         
-        Print(board);
-    }
+//&--AI/Human_vs_AI/Human-------------------------------------------------
     
-    cout<<"game over"<<endl;
-    if(board->m1>board->m2)
-        cout<<"Player 1 wins!"<<endl;
-    else if(board->m1<board->m2)
-        cout<<"Player 2 wins!"<<endl;
-    else
-        cout<<"Draw"<<endl;
-    cout<<"score:"<<endl;
-    cout<<"---------------------------"<<endl;
-    cout<<"player 1:"<<board->m1<<endl;
-    cout<<"player 2:"<<board->m2<<endl;
-*/
+    // int p1_score=0;
+    // int p2_score=0;
+
+    // Print(board);
+
+    // while(true){
+    //     if(board->isOver())
+    //         break;
+    //     if(board->player1){
+    //         //Player-1---Human------------------------------------------------
+    //         // cout<<"Player 1:"<<endl;
+    //         // while(true){
+    //         // cin>>n;
+    //         //     if(n>6||n<1)
+    //         //         cout<<"give a number between 1 to 6"<<endl;
+    //         //     else if(board->p1[n-1]==0)
+    //         //         cout<<"give a number of a pot that is not empty"<<endl;
+    //         //     else
+    //         //         break;
+    //         // }
+    //         // Game(board,n);
+    //         //Player-1---AI--------------------------------------------------
+    //         //GameAI(board,h);
+    //     }else{
+    //         //Player-2---Human------------------------------------------------
+    //         // cout<<"Player 2:"<<endl;
+    //         // while(true){
+    //         // cin>>n;
+    //         //     if(n>6||n<1)
+    //         //         cout<<"give a number between 1 to 6"<<endl;
+    //         //     else if(board->p2[n-1]==0)
+    //         //         cout<<"give a number of a pot that is not empty"<<endl;
+    //         //     else
+    //         //         break;
+    //         // }
+    //         //Player-2---AI--------------------------------------------------
+    //         // Game(board,n);
+    //         GameAI(board,h);
+    //     }
+        
+    //     Print(board);
+    // }
+    
+    // cout<<"game over"<<endl;
+    // if(board->m1>board->m2)
+    //     cout<<"Player 1 wins!"<<endl;
+    // else if(board->m1<board->m2)
+    //     cout<<"Player 2 wins!"<<endl;
+    // else
+    //     cout<<"Draw"<<endl;
+    // cout<<"score:"<<endl;
+    // cout<<"---------------------------"<<endl;
+    // cout<<"player 1:"<<board->m1<<endl;
+    // cout<<"player 2:"<<board->m2<<endl;
+
+//&---AI_vs_AI-Multiple_instances-----------------------------------------------
+
 int p1=0;
 int p2=0;
 int p3=0;
@@ -397,9 +445,9 @@ for(int i=0;i<3;i++){
         if(board->isOver())
             break;
         if(board->player1){
-            GameAI(board);
+            GameAI(board,h);
         }else{
-            GameAI(board);
+            GameAI(board,h);
         } 
     }
     if(board->m1>board->m2)
