@@ -149,11 +149,21 @@ void RecursivePrinter(node* temp,int row){
     cout<<endl;
 }
 
+string storage(node n,int row){
+    string s="";
+    for(int i=0;i<row;i++)
+        for(int j=0;j<row;j++)
+            s=s+to_string(n.state[i][j]);
+    
+    return s;
+}
+
 void AstarMan(int** puzzle,int** dest,int row){
    
     node first(puzzle,nullptr,0,manhattan(puzzle,dest,row),manhattan(puzzle,dest,row));
     priority_queue<node, vector<node>, myComp> pq;
     pq.push(first);
+    map<string,int> closedList;
 
     int zr,zc;
 
@@ -185,7 +195,12 @@ void AstarMan(int** puzzle,int** dest,int row){
                 n2.state[zr][zc-1]=0;
                 n2.h=manhattan(n2.state,dest,row);
                 n2.f=n2.h+n2.depth;
-                pq.push(n2);
+                string ss=storage(n2,row);
+                auto it = closedList.find(ss);
+                if (it == closedList.end()) {
+                    pq.push(n2);
+                    closedList.emplace(ss,1);
+                }
             }
             //right
             if(zc<(row-1)){
@@ -193,9 +208,13 @@ void AstarMan(int** puzzle,int** dest,int row){
                 n2.state[zr][zc]=n2.state[zr][zc+1];   
                 n2.state[zr][zc+1]=0;                 
                 n2.h=manhattan(n2.state,dest,row);      
-                n2.f=n2.h+n2.depth;                     
-                pq.push(n2);      
-
+                n2.f=n2.h+n2.depth;
+                string ss=storage(n2,row);
+                auto it = closedList.find(ss);
+                if (it == closedList.end()) {
+                    pq.push(n2);
+                    closedList.emplace(ss,1);
+                }     
             }
             //top
             if(zr>0){                
@@ -203,8 +222,13 @@ void AstarMan(int** puzzle,int** dest,int row){
                 n2.state[zr][zc]=n2.state[zr-1][zc];
                 n2.state[zr-1][zc]=0;
                 n2.h=manhattan(n2.state,dest,row);
-                n2.f=n2.h+n2.depth;              
-                pq.push(n2);
+                n2.f=n2.h+n2.depth;
+                string ss=storage(n2,row);
+                auto it = closedList.find(ss);
+                if (it == closedList.end()) {
+                    pq.push(n2);
+                    closedList.emplace(ss,1);
+                }
             }
             //bottom
             if(zr<(row-1)){
@@ -213,7 +237,12 @@ void AstarMan(int** puzzle,int** dest,int row){
                 n2.state[zr+1][zc]=0;
                 n2.h=manhattan(n2.state,dest,row);
                 n2.f=n2.h+n2.depth;
-                pq.push(n2);
+                string ss=storage(n2,row);
+                auto it = closedList.find(ss);
+                if (it == closedList.end()) {
+                    pq.push(n2);
+                    closedList.emplace(ss,1);
+                }
             } 
         }
     }
@@ -227,6 +256,7 @@ void AstarHam(int** puzzle,int** dest,int row){
     node first(puzzle,nullptr,0,hamming(puzzle,dest,row),hamming(puzzle,dest,row));
     priority_queue<node, vector<node>, myComp> pq;
     pq.push(first);
+    map<string,int> closedList;
 
     int zr,zc;
 
@@ -258,7 +288,12 @@ void AstarHam(int** puzzle,int** dest,int row){
                 n2.state[zr][zc-1]=0;
                 n2.h=hamming(n2.state,dest,row);
                 n2.f=n2.h+n2.depth;
-                pq.push(n2);
+                string ss=storage(n2,row);
+                auto it = closedList.find(ss);
+                if (it == closedList.end()) {
+                    pq.push(n2);
+                    closedList.emplace(ss,1);
+                }
             }
             //right
             if(zc<(row-1)){
@@ -267,7 +302,12 @@ void AstarHam(int** puzzle,int** dest,int row){
                 n2.state[zr][zc+1]=0;                 
                 n2.h=hamming(n2.state,dest,row);      
                 n2.f=n2.h+n2.depth;                     
-                pq.push(n2);      
+                string ss=storage(n2,row);
+                auto it = closedList.find(ss);
+                if (it == closedList.end()) {
+                    pq.push(n2);
+                    closedList.emplace(ss,1);
+                }      
 
             }
             //top
@@ -277,7 +317,12 @@ void AstarHam(int** puzzle,int** dest,int row){
                 n2.state[zr-1][zc]=0;
                 n2.h=hamming(n2.state,dest,row);
                 n2.f=n2.h+n2.depth;              
-                pq.push(n2);
+                string ss=storage(n2,row);
+                auto it = closedList.find(ss);
+                if (it == closedList.end()) {
+                    pq.push(n2);
+                    closedList.emplace(ss,1);
+                }
             }
             //bottom
             if(zr<(row-1)){
@@ -286,7 +331,12 @@ void AstarHam(int** puzzle,int** dest,int row){
                 n2.state[zr+1][zc]=0;
                 n2.h=hamming(n2.state,dest,row);
                 n2.f=n2.h+n2.depth;
-                pq.push(n2);
+                string ss=storage(n2,row);
+                auto it = closedList.find(ss);
+                if (it == closedList.end()) {
+                    pq.push(n2);
+                    closedList.emplace(ss,1);
+                }
             } 
         }
     }
